@@ -5,16 +5,19 @@ Positional arguments go after ``--`` so a pattern such as ``-rf`` is never parse
 as an option.
 """
 
+import codecs
 import subprocess
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+
+from arga_enfusion_mcp.process import bounded_run
 
 DEFAULT_TIMEOUT_SECONDS = 120.0
-DEFAULT_MAX_OUTPUT_CHARS = 40_000
+DEFAULT_MAX_OUTPUT_BYTES = 40_000
+MAX_ERROR_CHARS = 2000
 
-Runner = Callable[..., "subprocess.CompletedProcess[bytes]"]
+Runner = Callable[..., subprocess.CompletedProcess[bytes]]
 
 
 class CliError(RuntimeError):
@@ -32,14 +35,14 @@ class EnfusionCli:
         self,
         exe: Path,
         *,
-        runner: Runner = subprocess.run,
+        runner: Runner = bounded_run,
         timeout: float = DEFAULT_TIMEOUT_SECONDS,
-        max_output_chars: int = DEFAULT_MAX_OUTPUT_CHARS,
+        max_output_bytes: int = DEFAULT_MAX_OUTPUT_BYTES,
     ) -> None:
         self._exe = exe
         self._runner = runner
         self._timeout = timeout
-        self._max_output_chars = max_output_chars
+        self._max_output_bytes = max_output_bytes
 
     def glob(self, pattern: str, archives: Sequence[Path], *, long: bool = False) -> CliResult:
         options = ["--long"] if long else []
@@ -115,9 +118,12 @@ class EnfusionCli:
         argv = [str(self._exe), command, *options, "--", *positionals]
         argv += [str(archive) for archive in archives]
 
-        kwargs: dict[str, Any] = {"capture_output": True, "timeout": self._timeout}
         try:
-            completed = self._runner(argv, **kwargs)
+            completed = self._runner(
+                argv,
+                timeout=self._timeout,
+                max_output_bytes=self._max_output_bytes,
+            )
         except subprocess.TimeoutExpired as error:
             raise CliError(f"enfusion {command} timed out after {self._timeout:g}s") from error
         except OSError as error:
@@ -125,9 +131,11 @@ class EnfusionCli:
 
         if completed.returncode != 0:
             stderr = completed.stderr.decode("utf-8", errors="replace").strip()
+            if len(stderr) > MAX_ERROR_CHARS:
+                stderr = stderr[: MAX_ERROR_CHARS - len("...")] + "..."
             raise CliError(f"enfusion {command} failed ({completed.returncode}): {stderr}")
 
-        text = completed.stdout.decode("utf-8", errors="replace")
-        if len(text) > self._max_output_chars:
-            return CliResult(text[: self._max_output_chars], truncated=True)
-        return CliResult(text, truncated=False)
+        truncated = len(completed.stdout) > self._max_output_bytes
+        decoder = codecs.getincrementaldecoder("utf-8")("replace")
+        text = decoder.decode(completed.stdout[: self._max_output_bytes], final=not truncated)
+        return CliResult(text, truncated=truncated)

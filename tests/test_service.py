@@ -49,7 +49,7 @@ def dirs(tmp_path: Path) -> dict[str, Path]:
 
 
 def build(
-    dirs: dict[str, Path], runner: FakeRunner, *, extract: bool = True, max_chars: int = 40_000
+    dirs: dict[str, Path], runner: FakeRunner, *, extract: bool = True, max_bytes: int = 40_000
 ) -> PakService:
     settings = Settings(
         cli_path=Path("enfusion.exe"),
@@ -57,7 +57,7 @@ def build(
         mods_dir=dirs["mods"],
         extract_dir=dirs["extract"] if extract else None,
     )
-    cli = EnfusionCli(settings.cli_path, runner=runner, max_output_chars=max_chars)
+    cli = EnfusionCli(settings.cli_path, runner=runner, max_output_bytes=max_bytes)
     return PakService(settings, cli)
 
 
@@ -78,7 +78,7 @@ def test_empty_result_names_the_searched_source(dirs: dict[str, Path]) -> None:
 
 
 def test_truncated_result_gets_a_note(dirs: dict[str, Path]) -> None:
-    text = build(dirs, FakeRunner(b"x" * 100), max_chars=10).cat("/a.c", "data007")
+    text = build(dirs, FakeRunner(b"x" * 100), max_bytes=10).cat("/a.c", "data007")
 
     assert text.startswith("x" * 10)
     assert "truncated" in text

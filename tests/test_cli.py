@@ -123,14 +123,15 @@ def test_pattern_starting_with_dash_is_a_positional() -> None:
     assert argv.index("--") < argv.index("-rf")
 
 
-def test_runs_without_shell_and_with_timeout() -> None:
+def test_runs_without_shell_with_timeout_and_byte_cap() -> None:
     runner = FakeRunner()
 
-    make(runner, timeout=7).glob("*", [PAK])
+    make(runner, timeout=7, max_output_bytes=123).glob("*", [PAK])
 
     assert runner.kwargs["timeout"] == 7
+    assert runner.kwargs["max_output_bytes"] == 123
     assert not runner.kwargs.get("shell")
-    assert runner.kwargs["capture_output"] is True
+    assert "capture_output" not in runner.kwargs
 
 
 def test_nonzero_exit_raises_with_stderr() -> None:
@@ -151,11 +152,42 @@ def test_timeout_raises_cli_error() -> None:
 def test_output_is_truncated() -> None:
     runner = FakeRunner(b"x" * 100)
 
-    result = make(runner, max_output_chars=10).glob("*", [PAK])
+    result = make(runner, max_output_bytes=10).glob("*", [PAK])
 
     assert result.truncated is True
     assert result.text.startswith("x" * 10)
     assert len(result.text) < 100
+
+
+def test_output_exactly_at_cap_is_not_truncated() -> None:
+    runner = FakeRunner(b"x" * 10)
+
+    result = make(runner, max_output_bytes=10).glob("*", [PAK])
+
+    assert result.text == "x" * 10
+    assert result.truncated is False
+
+
+def test_truncation_inside_multibyte_char_drops_partial_bytes() -> None:
+    runner = FakeRunner("é".encode() * 10)
+
+    result = make(runner, max_output_bytes=5).glob("*", [PAK])
+
+    assert result.text == "éé"
+    assert "\ufffd" not in result.text
+    assert result.truncated is True
+
+
+def test_long_stderr_is_bounded_in_error_message() -> None:
+    runner = FakeRunner(stderr=b"error line " * 1000, returncode=1)
+
+    with pytest.raises(CliError) as error:
+        make(runner).glob("*", [PAK])
+
+    message = str(error.value)
+    assert len(message) < 2200
+    assert "error line error line" in message
+    assert message.endswith("...")
 
 
 def test_invalid_utf8_is_replaced() -> None:
