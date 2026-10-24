@@ -28,3 +28,6 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
+
+[project.scripts]
+arga-enfusion-mcp = "arga_enfusion_mcp.server:main"

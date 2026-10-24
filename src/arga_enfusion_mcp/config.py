@@ -8,6 +8,7 @@ from pathlib import Path
 CLI_ENV = "ENFUSION_CLI"
 DATA_DIR_ENV = "REFORGER_DATA_DIR"
 MODS_DIR_ENV = "REFORGER_MODS_DIR"
+EXTRACT_DIR_ENV = "REFORGER_EXTRACT_DIR"
 
 
 class ConfigError(RuntimeError):
@@ -19,6 +20,7 @@ class Settings:
     cli_path: Path
     data_dir: Path | None
     mods_dir: Path | None
+    extract_dir: Path | None
 
 
 def _optional_path(env: Mapping[str, str], key: str) -> Path | None:
@@ -52,4 +54,5 @@ def load_settings(
         cli_path=_resolve_cli(env, which),
         data_dir=_optional_path(env, DATA_DIR_ENV),
         mods_dir=_optional_path(env, MODS_DIR_ENV),
+        extract_dir=_optional_path(env, EXTRACT_DIR_ENV),
     )

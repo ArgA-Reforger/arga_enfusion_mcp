@@ -59,3 +59,20 @@ def test_optional_dirs_are_read_from_env(tmp_path: Path) -> None:
 
     assert settings.data_dir == data
     assert settings.mods_dir == mods
+
+
+def test_extract_dir_is_read_from_env(tmp_path: Path) -> None:
+    exe = tmp_path / "enfusion.exe"
+    exe.write_bytes(b"")
+    out = tmp_path / "out"
+
+    settings = load_settings({"ENFUSION_CLI": str(exe), "REFORGER_EXTRACT_DIR": str(out)})
+
+    assert settings.extract_dir == out
+
+
+def test_extract_dir_defaults_to_none(tmp_path: Path) -> None:
+    exe = tmp_path / "enfusion.exe"
+    exe.write_bytes(b"")
+
+    assert load_settings({"ENFUSION_CLI": str(exe)}).extract_dir is None
