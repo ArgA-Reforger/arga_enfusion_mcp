@@ -1,18 +1,35 @@
-# Build and Release Folders
-bin-debug/
-bin-release/
-[Oo]bj/
-[Bb]in/
+# VSC
+.history
+*.code-workspace
+acme.json
 
-# Other files and folders
-.settings/
+# Pycharm
+.idea
+.idea/
+.venv/
+.qodo/
 
-# Executables
-*.swf
-*.air
-*.ipa
-*.apk
+# Environment
+.env
 
-# Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
-# should NOT be excluded as they contain compiler settings and other important
-# information for Eclipse / Flash Builder.
+# Config files
+config.json
+config.json.prod
+
+# CodeGraph index
+.codegraph/
+
+# Arma Reforger Tool cache
+.atl/
+
+# Workbench resource database (regenerated)
+resourceDatabase.rdb
+
+# NTFS junction into .agents/reforger-agent-skills/skills — regenerate with:
+# New-Item -ItemType Junction -Path .agents\skills -Target (Resolve-Path .agents\reforger-agent-skills\skills)
+.agents/skills/
+
+# Python and Blender caches/backups
+__pycache__/
+*.pyc
+*.blend1
