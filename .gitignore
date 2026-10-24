@@ -33,3 +33,9 @@ resourceDatabase.rdb
 __pycache__/
 *.pyc
 *.blend1
+
+# Local MCP client configuration (machine-specific paths, never commit)
+.mcp.json
+.pi/
+.gemini/
+.claude/settings.local.json
