@@ -1,0 +1,30 @@
+[project]
+name = "arga-enfusion-mcp"
+version = "0.1.0"
+description = "MCP server to read Arma Reforger .pak archives and resolve GUIDs from resourceDatabase.rdb"
+authors = [
+    { name = "VulturARG", email = "luisbriones@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "mcp>=2.3.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.19,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.17.2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
