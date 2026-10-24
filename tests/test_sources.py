@@ -92,3 +92,20 @@ def test_rdb_path_rejects_unsafe_and_missing(resolver: SourceResolver) -> None:
         resolver.rdb_path("../x")
     with pytest.raises(SourceError, match="not found"):
         resolver.rdb_path("Ghost")
+
+
+def test_unknown_source_error_caps_the_listing(tmp_path: Path) -> None:
+    data = tmp_path / "data"
+    data.mkdir()
+    mods = tmp_path / "mods"
+    for index in range(60):
+        (mods / f"Mod{index:02d}").mkdir(parents=True)
+        (mods / f"Mod{index:02d}" / "data.pak").write_bytes(b"")
+
+    with pytest.raises(SourceError) as error:
+        SourceResolver(data, mods).archives("nope")
+
+    message = str(error.value)
+    assert "list_sources" in message
+    assert "Mod59" not in message
+    assert len(message) < 600

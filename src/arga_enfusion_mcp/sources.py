@@ -13,6 +13,7 @@ from arga_enfusion_mcp.config import DATA_DIR_ENV, MODS_DIR_ENV
 _SAFE_NAME = re.compile(r"[A-Za-z0-9_.\-]+")
 _RDB_FILE = "resourceDatabase.rdb"
 _MOD_PAK = "data.pak"
+_MAX_LISTED = 10
 
 
 class SourceError(ValueError):
@@ -54,8 +55,13 @@ class SourceResolver:
                 return [candidate]
 
         available = self.available()
-        listing = ", ".join(available["data"] + available["mods"]) or "none"
-        raise SourceError(f"Unknown source {name!r}. Available: {listing}")
+        names = available["data"] + available["mods"]
+        shown = ", ".join(names[:_MAX_LISTED]) or "none"
+        more = f" (+{len(names) - _MAX_LISTED} more)" if len(names) > _MAX_LISTED else ""
+        raise SourceError(
+            f"Unknown source {name!r}. Available: {shown}{more}. "
+            "Call list_sources for the full list."
+        )
 
     def rdb_path(self, source: str) -> Path:
         name = _check_name(source)
