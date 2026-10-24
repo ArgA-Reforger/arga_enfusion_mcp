@@ -6,6 +6,10 @@ archives and resolve GUIDs from `resourceDatabase.rdb`, instead of answering fro
 It wraps the open-source [`enfusion_tools`](https://github.com/landaire/enfusion_tools) CLI
 (MIT, by landaire) for the `.pak` formats, and parses the `.rdb` in pure Python.
 
+> **This project uses [landaire/enfusion_tools](https://github.com/landaire/enfusion_tools).**
+> It does not reimplement the `.pak` format: every `pak_*` tool runs the `enfusion` binary built
+> from that repository, so you need it installed (see Requirements).
+
 > `resourceDatabase.rdb` is not compressed: it is a flat index of resource paths and GUIDs.
 > `.pak` files are read by index, without unpacking them first.
 
@@ -131,6 +135,10 @@ de **Arma Reforger** y resolver GUIDs desde `resourceDatabase.rdb`, en lugar de 
 
 Envuelve la CLI open source [`enfusion_tools`](https://github.com/landaire/enfusion_tools)
 (MIT, de landaire) para los formatos `.pak`, y analiza el `.rdb` en Python puro.
+
+> **Este proyecto usa [landaire/enfusion_tools](https://github.com/landaire/enfusion_tools).**
+> No reimplementa el formato `.pak`: cada herramienta `pak_*` ejecuta el binario `enfusion`
+> compilado desde ese repositorio, por lo que es necesario tenerlo instalado (ver Requisitos).
 
 > `resourceDatabase.rdb` no está comprimido: es un índice plano de rutas de recursos y GUIDs.
 > Los `.pak` se leen por índice, sin desempaquetarlos primero.
